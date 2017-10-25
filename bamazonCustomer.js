@@ -1,4 +1,4 @@
-'use strict';
+// 'use strict';
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var Table = require('cli-table');
@@ -6,6 +6,7 @@ var colors = require('colors');
 
 
 /*-------------------connecting to mysql database-----------------------*/
+
 var connection = mysql.createConnection({
     host: "localhost",
     port: 3306,
@@ -14,11 +15,15 @@ var connection = mysql.createConnection({
     database: 'bamazon'
 });
 
+
 connection.connect(function(err) {
     if (err) throw err;
     console.log('\n Welcome to Bamazon!');
-    displayTable();
-    runSearch();
+    connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", 
+        function (err, result, fields) {if (err) throw err;
+        displayTable(result);
+        userInput(result);
+    });
 
 });
 //makes an error message red
@@ -27,7 +32,8 @@ colors.setTheme({
 });
 
 /*------------cli-table which is loaded after the connection is made to mysql-*/
-function displayTable() {
+
+function displayTable(listing) {
     var table = new Table({
 //this is not formatting in the terminal
 
@@ -51,14 +57,19 @@ function displayTable() {
     });
 
     table.push(
-        ['ID', 'Name', 'Cost'], ['1', 'wisk', '$3.50'], ['2', 'shampoo', '$2.75'], ['3', 'conditioner', '$3.00'], ['4', 'spatula', '$6.99'], ['5', 'shaving cream', '$3.95'], ['6', 'olive oil', '$4.99'], ['7', 'perfume', '$39.99'], ['8', 'batteries', '$9.99'], ['9', 'sunscreen', '$2.99'], ['10', 'extension cord', '$5.95']
+        ['ID', 'Name', 'Cost']
 
     );
 
+    for(i in listing){
+        table.push([listing[i].item_id,listing[i].product_name, listing[i].price]);
+    }
+
     console.log(table.toString());
 }
-/*------------this prompts the user for 2-inputs: what product Id and how many-------------------------------- */
-function runSearch() {
+/*------------this prompts the user for 2-inputs:  product Id and quantity-------------------- */
+
+function userInput(listing) {
     var questions = [{
         type: 'input',
         name: 'productId',
@@ -80,7 +91,16 @@ function runSearch() {
     }, ];
 
     inquirer.prompt(questions).then(function(answers) {
-        console.log('\nTotal cost: ');
-        console.log(JSON.stringify(answers, null, '  '));
+        
+        if(listing[answers.productId-1].stock_quantity >= answers.quantity){
+            connection.query("UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.productId, 
+                function (err, result, fields) {if (err) throw err;
+                   console.log('\nTotal cost: '+ listing[answers.productId-1].price*answers.quantity); 
+               });
+        }else{
+            console.log('Insufficient quantitiy!');
+        }
     });
 }
+
+
