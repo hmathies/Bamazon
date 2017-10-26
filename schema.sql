@@ -14,3 +14,7 @@ CREATE TABLE products (
 );
 
 SELECT * FROM products;
+
+/*--------created this index because item_id will be called the most from the table-------------*/
+
+CREATE INDEX by_item_id ON products (item_id);
