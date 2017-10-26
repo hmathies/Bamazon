@@ -19,8 +19,8 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
     if (err) throw err;
     console.log('\n Welcome to Bamazon!');
-    connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", 
-        function (err, result, fields) {if (err) throw err;
+    var query = "SELECT item_id, product_name, price, stock_quantity FROM products";
+    connection.query(query, function (err, result, fields) {if (err) throw err;
         displayTable(result);
         userInput(result);
     });
@@ -91,16 +91,22 @@ function userInput(listing) {
     }, ];
 
     inquirer.prompt(questions).then(function(answers) {
-        
+       
         if(listing[answers.productId-1].stock_quantity >= answers.quantity){
-            connection.query("UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.productId, 
+            var query = "UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.productId;
+            connection.query(query, 
                 function (err, result, fields) {if (err) throw err;
                    console.log('\nTotal cost: '+ listing[answers.productId-1].price*answers.quantity); 
+                   userInput(listing);
                });
         }else{
             console.log('Insufficient quantitiy!');
         }
+    
+        
     });
 }
+
+
 
 
