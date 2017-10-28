@@ -1,4 +1,4 @@
-// 'use strict';
+
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var Table = require('cli-table');
@@ -17,10 +17,17 @@ var connection = mysql.createConnection({
 
 
 connection.connect(function(err) {
+
     if (err) throw err;
-    console.log('\n Welcome to Bamazon!');
+
+    console.log('\n Welcome to Bamazon!'.cyan);
+
     var query = "SELECT item_id, product_name, price, stock_quantity FROM products";
-    connection.query(query, function (err, result, fields) {if (err) throw err;
+
+    connection.query(query, function (err, result, fields) {
+        if (err) throw err;
+    /*------passing the results from the mysql query to display the info from the database
+    and make it availble to the user------*/
         displayTable(result);
         userInput(result);
     });
@@ -28,36 +35,18 @@ connection.connect(function(err) {
 });
 //makes an error message red
 colors.setTheme({
-    error: 'red'
+    error: 'red',
+    prompt: 'blue',
+    data: 'green'
 });
 
-/*------------cli-table which is loaded after the connection is made to mysql-*/
+/*------------cli-table which is loaded after the connection is made to mysql-----------*/
 
 function displayTable(listing) {
-    var table = new Table({
-//this is not formatting in the terminal
-
-        chars: {
-            'top': '═',
-            'top-mid': '╤',
-            'top-left': '╔',
-            'top-right': '╗',
-            'bottom': '═',
-            'bottom-mid': '╧',
-            'bottom-left': '╚',
-            'bottom-right': '╝',
-            'left': '║',
-            'left-mid': '╟',
-            'mid': '─',
-            'mid-mid': '┼',
-            'right': '║',
-            'right-mid': '╢',
-            'middle': '│'
-        }
-    });
+    var table = new Table
 
     table.push(
-        ['ID', 'Name', 'Cost']
+        [ 'ID', 'Name', 'Cost']
 
     );
 
@@ -91,22 +80,19 @@ function userInput(listing) {
     }, ];
 
     inquirer.prompt(questions).then(function(answers) {
-       
+
         if(listing[answers.productId-1].stock_quantity >= answers.quantity){
             var query = "UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.productId;
-            connection.query(query, 
+            connection.query(query,
                 function (err, result, fields) {if (err) throw err;
-                   console.log('\nTotal cost: '+ listing[answers.productId-1].price*answers.quantity); 
+                   console.log(colors.cyan('\nTotal cost: '+ listing[answers.productId-1].price*answers.quantity));
+                   displayTable(listing);
                    userInput(listing);
                });
         }else{
-            console.log('Insufficient quantitiy!');
+            console.log('Insufficient quantitiy!'.red);
         }
-    
-        
+
+
     });
 }
-
-
-
-
