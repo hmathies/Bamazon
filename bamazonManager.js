@@ -1,6 +1,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 var Table = require('cli-table');
+var colors = require('colors');
 
 
 var connection = mysql.createConnection({
@@ -28,13 +29,17 @@ function runSearch(result) {
         "View Products for Sale",
         "View Low Inventory",
         "Find data within a specific range",
-        "Add New Product"
+        "Add New Product",
+        "Exit"
       ]
     })
     .then(function(answer) {
       switch (answer.action) {
         case "View Products for Sale":
-          productSearch();
+          saleProducts();
+          break;
+        case "Exit":
+          exit();
           break;
 //need to add more switch statements
 
@@ -42,8 +47,10 @@ function runSearch(result) {
     });
   }
 
-    function productSearch() {
-      console.log('\n Welcome to Bamazon!'.cyan);
+    function saleProducts() {
+
+      console.log('\n Bamazon Sale Products!'.cyan);
+      console.log("WTF");
 
       var query = "SELECT item_id, product_name, department_name, price, stock_quantity FROM products";
 
@@ -67,6 +74,12 @@ function displayTable(listing) {
     }
     console.log(table.toString());
     runSearch();
+}
+
+function exit(){
+  console.log("Have a great day!");
+  process.exit(-1);
+
 }
 
 // * Create a new Node application called `bamazonManager.js`. Running this application will:
