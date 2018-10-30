@@ -85,14 +85,44 @@ function userInput(listing) {
             var query = "UPDATE products SET stock_quantity = stock_quantity - " + answers.quantity + " WHERE item_id = " + answers.productId;
             connection.query(query,
                 function (err, result, fields) {if (err) throw err;
-                   console.log(colors.cyan('\nTotal cost: '+ listing[answers.productId-1].price*answers.quantity));
-                   displayTable(listing);
-                   userInput(listing);
+                   console.log(colors.cyan("\nTotal cost: $ " + listing[answers.productId-1].price*answers.quantity));
+                   whatNext(listing);
+                   // displayTable(listing);
+                   // userInput(listing);
                });
         }else{
-            console.log('Insufficient quantitiy!'.red);
+            console.log('Insufficient quantitiy! Please select a different amount.'.red);
+            displayTable(listing);
+            userInput(listing);
         }
 
 
     });
+
+    function whatNext(listing) {
+        var next = [{
+            type: 'input',
+            name: "whatNext",
+            message: "Would you like to continue shopping (y or n)? "
+            // validate: function(value) {
+            //     var valid = !isNaN(parseFloat(value));
+            //     return valid || colors.error('Please enter a number');
+            // },
+            // filter: Number
+        },];
+            inquirer.prompt(next).then(function(answers, error){
+                if(answers.whatNext === 'y'){
+                    displayTable(listing);
+                    userInput(listing);
+                }else if(answers.whatNext === 'n'){
+                    console.log("Thanks for Shopping!");
+
+                    
+                }else{
+                console.log("Please enter 'y' to continue shopping or 'n' to exit");
+                whatNext(listing);
+                }
+            })
+     
+    }
 }
